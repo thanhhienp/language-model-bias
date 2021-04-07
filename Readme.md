@@ -6,5 +6,7 @@ To run the model with `main.py` with bias regularization -
  + Input the `--gender_pair_file` from the repo if you are using PTB, wikitext-2 or CNN/Dailymail. If you are using a different corpus, you will need to create your own based on the corpus.
 
 To run the bias scores on a text corpus -
-+ `python fixed_context_bias_score.py filepath dm -w 100 -n 1
-+ `python infinite_context_bias_score.py filepath dm -w 100 -n 1
++ `python fixed_context_bias_score.py [input_dir] [output_dir] --gender_pair_file [penn/wiki] -w [window] -n [num_workers]
+Example:
++ `python fixed_context_bias_score.py ./awd-lstm/data/penn/ ./bias-output-penn-data/ --gender_pair_file penn -w 100 -n 1
++ `python infinite_context_bias_score.py ./awd-lstm/data/penn/ ./bias-output/ --gender_pair_file penn -w 100 -n 1
