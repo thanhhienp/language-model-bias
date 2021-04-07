@@ -8,14 +8,18 @@ from log import init_console_logger
 import logging
 import data
 import model
+import os
 
 from utils import batchify, get_batch, repackage_hidden
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True' # Block a weird library error on MacOS
 
 #parser = argparse.ArgumentParser(description='PyTorch PennTreeBank RNN/LSTM Language Model')
 #parser.add_argument('--data', type=str, default='data/penn/',
- #                   help='location of the data corpus')
+#                   help='location of the data corpus')
+data_path = os.path.join(os.path.dirname(__file__), 'data/penn')
+penn_gender_pairs = os.path.join(os.path.dirname(__file__), 'penn')
 parser = argparse.ArgumentParser(description='PyTorch Wikitext-2 RNN/LSTM Language Model')
-parser.add_argument('--data', type=str, default='/beegfs/yw3004/projects/language_bias/data/penn/',
+parser.add_argument('--data', type=str, default=data_path,
                     help='location of the data corpus')
 
 parser.add_argument('--model', type=str, default='LSTM',
@@ -53,7 +57,7 @@ parser.add_argument('--seed', type=int, default=1111,
                     help='random seed')
 parser.add_argument('--nonmono', type=int, default=5,
                     help='random seed')
-parser.add_argument('--cuda', action='store_false',
+parser.add_argument('--cuda', action='store_true',
                     help='use CUDA')
 parser.add_argument('--log-interval', type=int, default=200, metavar='N',
                     help='report interval')
@@ -85,8 +89,8 @@ parser.add_argument('--bias_reg_de_factor', type=float, default=1.0,
 
 parser.add_argument('--bias_reg_var_ratio', type=float, default=0.5,
                     help=('ratio of variance used for determining size of gender'
-                          'subspace for bias regularization'))
-parser.add_argument('--gender_pair_file', type=str, default=None,
+                        'subspace for bias regularization'))
+parser.add_argument('--gender_pair_file', type=str, default=penn_gender_pairs,
                     help=('debias using these gender pairs'))
 
 
@@ -244,6 +248,7 @@ from splitcross import SplitCrossEntropyLoss
 criterion = None
 
 ntokens = len(corpus.dictionary)
+print(args.model)
 model = model.RNNModel(args.model, ntokens, args.emsize, args.nhid, args.nlayers, args.dropout, args.dropouth, args.dropouti, args.dropoute, args.wdrop, args.tied)
 ###
 if args.resume:
@@ -267,7 +272,7 @@ if not criterion:
     elif ntokens > 75000:
         # WikiText-103
         splits = [2800, 20000, 76000]
-    LOGGER.info('Using', splits)
+    LOGGER.info(f'Using {splits}')
     criterion = SplitCrossEntropyLoss(args.emsize, splits=splits, verbose=False)
 ###
 if args.cuda:
@@ -276,8 +281,8 @@ if args.cuda:
 ###
 params = list(model.parameters()) + list(criterion.parameters())
 total_params = sum(x.size()[0] * x.size()[1] if len(x.size()) > 1 else x.size()[0] for x in params if x.size())
-LOGGER.info('Args:', args)
-LOGGER.info('Model total parameters:', total_params)
+LOGGER.info(f'Args: {args}')
+LOGGER.info(f'Model total parameters: {total_params}')
 
 ###############################################################################
 # Training code
