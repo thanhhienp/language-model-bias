@@ -151,9 +151,7 @@ def word_count(file,data):
         
 
 
-def get_cooccurrences(file, data, window):           
-    
-   
+def get_cooccurrences(file, data, window):
     with open(file, 'r') as fp:
         print(fp)
         sentences = fp.read()
@@ -190,7 +188,7 @@ def get_cooccurrences(file, data, window):
     return data
     
 
-def coccurrence_counts(dataset_dir, output_dir, window=7,num_workers=1):
+def coccurrence_counts(dataset_dir, output_dir, window=7, num_workers=1):
     
     
     dataset_dir = os.path.abspath(dataset_dir)
@@ -233,7 +231,7 @@ def coccurrence_counts(dataset_dir, output_dir, window=7,num_workers=1):
             
             
 init_console_logger(LOGGER)
-coccurrence_counts(**(parse_arguments()))
+coccurrence_counts(args.dataset_dir, args.output_dir, args.window, args.num_workers)
             
     
     
