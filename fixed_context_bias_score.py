@@ -17,6 +17,7 @@ import _pickle as pk
 from unidecode import unidecode
 import logging
 from log import init_console_logger
+import pandas as pd
 
 
 
@@ -38,18 +39,16 @@ filename  = args.gender_pair_file+'-gender-pairs'
 
 
 DEFAULT_FEMALE_NOUNS, DEFAULT_MALE_NOUNS =[],[]
-with open(filename,'r') as f:
+
+with open(filename, 'r') as f:
     gender_pairs = f.readlines()
 
 for gp in gender_pairs:
-    f,m=gp.split()
+    m, f = gp.split()
     DEFAULT_FEMALE_NOUNS.append(f)
     DEFAULT_MALE_NOUNS.append(m)
 
-
-
 def sortbybias(d):
-    
     d_s = sorted(d.items(), key = lambda t: t[1]['b_score'])
     return d_s
 
@@ -95,7 +94,7 @@ def gender_ratios_m_f(output_data_dir,file):
     bias_record = {}
     for words in data:
         if (data[words]['m']+data[words]['f']!=0 and data[words]['f']!=0 and data[words]['m']!=0):
-            score = data[words]['m']/(data[words]['m']+data[words]['f'])
+            score = data[words]['f']/(data[words]['m']+data[words]['f'])
             tot+=score
             n +=1
             rec = {"b_score" : score}
@@ -103,12 +102,10 @@ def gender_ratios_m_f(output_data_dir,file):
             bias_record[words] = data[words]
     #print(bias_record)
     #print(sortbybias(bias_record))
-    output_file = os.path.join(output_data_dir, 'biased_words_m_f')   
-    #print("Bias_score: ", (tot/n))
+    output_file = os.path.join(output_data_dir, 'biased_words_m_f')
+    print("Bias_score: ", (tot/n))
     with open(output_file,'w') as fp:
         json.dump(bias_record,fp, sort_keys=True)   
-
-
 
 def gender_ratios(output_data_dir,file):
     #print("Gender Ratios...")
@@ -117,7 +114,7 @@ def gender_ratios(output_data_dir,file):
     bias_record = {}
     for words in data:
         if (data[words]['m']+data[words]['f']!=0):
-            score = data[words]['m']/(data[words]['m']+data[words]['f'])
+            score = data[words]['f']/(data[words]['m']+data[words]['f'])
             rec = {"b_score" : score}
             data[words].update(rec)
             bias_record[words] = data[words]
@@ -165,7 +162,6 @@ def get_cooccurrences(file, data, window):
         m = 0 
         f = 0 
         for w in grams:
-                
                 pos+=1
                 if w not in data:
                     data[w]= {"m":0, "f":0}
@@ -189,11 +185,8 @@ def get_cooccurrences(file, data, window):
     
 
 def coccurrence_counts(dataset_dir, output_dir, window=7, num_workers=1):
-    
-    
     dataset_dir = os.path.abspath(dataset_dir)
-    output_dir = os.path.abspath(output_dir)
-    output_data_dir = os.path.join(output_dir, 'bias_scores')
+    output_data_dir = os.path.abspath(output_dir)
     
     if not os.path.isdir(dataset_dir):
         raise ValueError('Dataset directory {} does not exist'.format(dataset_dir))
@@ -226,12 +219,24 @@ def coccurrence_counts(dataset_dir, output_dir, window=7, num_workers=1):
         
     gender_ratios(output_data_dir,output_file)  
     gender_ratios_m_f(output_data_dir,output_file) 
-    
 
-            
-            
+# Added by Hien Pham - calculate statistics for the corpuses
+def statistics():
+    # reimport & format bias scores
+    m_f_path = args.output_dir + 'biased_words_m_f'
+    scores = pd.read_json(m_f_path, orient='index')
+    scores.reset_index(inplace=True)
+    scores = scores.rename(columns={"index": "word", "b_score": "b_score", "f": "f", "m": "m"})
+
+    # calculate values:
+    std = scores['b_score'].std()
+    mean = scores['b_score'].mean()
+
+    stats = pd.DataFrame({'std': [std], 'mean': [mean]})
+    output_file = args.output_dir + 'summary_stats.csv'
+    stats.to_csv(output_file, index=False)
+
+
 init_console_logger(LOGGER)
 coccurrence_counts(args.dataset_dir, args.output_dir, args.window, args.num_workers)
-            
-    
-    
+statistics()

@@ -8,5 +8,5 @@ To run the model with `main.py` with bias regularization -
 To run the bias scores on a text corpus -
 + `python fixed_context_bias_score.py [input_dir] [output_dir] --gender_pair_file [penn/wiki] -w [window] -n [num_workers]
 Example:
-+ `python fixed_context_bias_score.py ./awd-lstm/data/penn/ ./bias-output-penn-data/ --gender_pair_file penn -w 100 -n 1
-+ `python infinite_context_bias_score.py ./awd-lstm/data/penn/ ./bias-output/ --gender_pair_file penn -w 100 -n 1
++ `python fixed_context_bias_score.py ./generated/ ./bias_data_output/gen_m75-f25/ --gender_pair_file penn -w 10 -n 1
++ `python infinite_context_bias_score.py ./awd-lstm/data/penn/ ./bias-output/ --gender_pair_file penn -w 10 -n 1
