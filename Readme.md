@@ -10,3 +10,4 @@ To run the bias scores on a text corpus -
 Example:
 + `python fixed_context_bias_score.py ./generated/ ./bias_data_output/gen_m75-f25/ --gender_pair_file penn -w 10 -n 1
 + `python infinite_context_bias_score.py ./awd-lstm/data/penn/ ./bias-output/ --gender_pair_file penn -w 10 -n 1
+Bias score mean & std are in summary_stats.csv of the output folder
